@@ -1,0 +1,9 @@
+node_modules/
+*.log
+.DS_Store
+Thumbs.db
+
+# Local run output, if someone points runsDir inside the repo
+gpu-runs/
+*.pyc
+__pycache__/

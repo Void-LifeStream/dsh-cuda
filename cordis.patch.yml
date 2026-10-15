@@ -1,0 +1,26 @@
+# ============================================================================
+# dsh-cuda —— DSH bundle patch
+# ============================================================================
+# 挂载声明：DSH 启动时按 bundle 层栈叠加各插件 patch，本文件把 dsh-cuda
+# 插入 profile 的配置树。
+#
+# 安装（官方姿势，见 DSH 自带技能 cordis-plugin-development）：
+#   plugin_manager  action: install_bundle  target: <本目录绝对路径>
+# 它会替你更新 profile 的 package.json 与 dsh.profile.bundles 并跑 pnpm。
+# ⚠️ 不要手改 profile 的 package.json / cordis.patch.yml，也不要把包建在
+#    $DSH_HOME 下 —— 那两件事正是那个技能明确劝阻的。
+#
+# 技能（cuda-compute）不在这里声明：它由 lib/index.js 通过 ctx.skills 的
+# borrowed provider 注册（软依赖；缺 skills 服务时三个工具照常工作）。
+#
+# 可选配置（在 profile 的 cordis.patch.yml 里覆盖）：
+#   - id: dsh-cuda
+#     config:
+#       pythonPath: 'F:\ComfyUI\ComfyUI-aki-v3.2\python\python.exe'
+#       defaultTimeoutMs: 300000
+#       maxOutputChars: 12000
+# ============================================================================
+
+- insert:
+    - id: dsh-cuda
+      name: dsh-cuda

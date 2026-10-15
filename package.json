@@ -1,0 +1,34 @@
+{
+  "name": "dsh-cuda",
+  "version": "0.1.0",
+  "description": "Run Python work on the local CUDA GPU from DeepSeek Harness: device status, foreground and background runs, durable job logs, peak-VRAM facts.",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "cuda",
+    "gpu",
+    "nvidia",
+    "rtx-4090",
+    "torch",
+    "scientific-computing"
+  ],
+  "type": "module",
+  "main": "lib/entry.js",
+  "files": [
+    "lib",
+    "skills",
+    "test",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node test/selftest.mjs"
+  },
+  "license": "MIT",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}
