@@ -103,8 +103,14 @@ is reported but never chosen. Embedded interpreters shipped with image-generatio
 ## Requirements
 
 - DeepSeek Harness, Node 22+
-- A CUDA-capable NVIDIA GPU with a driver new enough for the installed torch
-- A Python with `torch` + CUDA (the rest — numpy, numba, triton, scipy — is optional)
+- **Any** CUDA-capable NVIDIA GPU — the card model does not matter, and nothing here is tuned for
+  one. `cuda_status` reports the model, memory, compute capability and bf16 support at runtime, so
+  the documents deliberately do not hard-code them.
+- **The one real constraint is driver ↔ torch.** A CUDA build of PyTorch needs a driver at least as
+  new as the CUDA runtime it was compiled against; if `torch.cuda.is_available()` is `False`, that
+  mismatch (or a CPU-only torch wheel) is the usual cause. `cuda_status` shows the driver and each
+  interpreter's CUDA availability side by side, so the problem is visible before writing any code.
+- A Python with `torch` + CUDA. The rest (numpy, triton, scipy…) is optional.
 
 For **writing custom kernels** the plugin's skill documents what actually works: use
 [`triton`](https://github.com/triton-lang/triton) if it is installed. `numba.cuda` needs

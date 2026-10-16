@@ -146,7 +146,7 @@ try {
   const statusValue = await statusTool.execute({}, { signal: undefined, agent: undefined });
   const statusText = statusTool.output.render({}, statusValue)[0].text;
   console.log(statusText.split('\n').slice(0, 6).map((line) => '  ' + line).join('\n'));
-  check('status finds the GPU', statusText.includes('RTX 4090'));
+  check('status reports a device', /GPU 0\s+\S/.test(statusText), statusText.split('\n')[0].trim());
   check('status lists CUDA interpreters', statusText.includes('CUDA ok'));
   check('status points at the runs dir', statusText.includes('Recent jobs'));
   check('status returned structured jobs', Array.isArray(statusValue.jobs));
@@ -173,7 +173,8 @@ try {
   check('run finished', runValue.status === 'done', String(runValue.status));
   check('run printed the marker', (runValue.stdout ?? '').includes('HARNESS_GPU_OK'));
   check('run recorded peak VRAM', Number(runValue.facts?.peak_alloc_MB) > 0, `${runValue.facts?.peak_alloc_MB} MB`);
-  check('rendered output names the device', runText.includes('RTX 4090') || runText.includes('peak VRAM'));
+  check('rendered output carries the run facts', runText.includes('peak VRAM'),
+    (runText.split('\n').find((line) => line.includes('peak VRAM')) ?? '').trim());
 
   /* ---------------------------------------------------------------- */
   console.log('\n=== cuda_job follows that run ===');

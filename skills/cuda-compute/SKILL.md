@@ -1,13 +1,14 @@
 ---
 name: cuda-compute
-description: Run heavy numerical work on the local RTX 4090 through the dsh-cuda tools (cuda_status / cuda_run / cuda_job). Use for matrix math, simulation, Monte Carlo, parameter sweeps, signal or image processing, training small models, or any parallel workload that would take minutes on the CPU. Also use when a CUDA run failed with an out-of-memory error or when you need to know which Python on this machine has torch with CUDA.
+description: Run heavy numerical work on the local NVIDIA CUDA GPU through the dsh-cuda tools (cuda_status / cuda_run / cuda_job). Use for matrix math, simulation, Monte Carlo, parameter sweeps, signal or image processing, training small models, or any parallel workload that would take minutes on the CPU. Also use when a CUDA run failed with an out-of-memory error or when you need to know which Python on this machine has torch with CUDA.
 whenToUse: The task is numerically heavy, data-parallel, or already slow on the CPU; or you need GPU status before/after a run.
 ---
 
-# 在这台机器上用 4090 做计算
+# 在这台机器上用 CUDA GPU 做计算
 
-> 本文件由 2026-10-15 的会话落地，配套插件 `~/.dsh/plugins/dsh-cuda/`（工具）+ 本技能（说明书）。
-> 环境实测数据是那天的：驱动 617.42 / torch 2.13.0+cu130 / CUDA UMD 13.4。**环境变了要更新这里。**
+> 本文件由 2026-10-15 的会话落地，配套插件 `dsh-cuda`（源码在工作区，工具 + 本技能）。
+> ⚠️ **凡是跟具体显卡有关的数字（型号 / 显存 / 算力 / 是否支持 bf16），一律以 `cuda_status` 的实时输出为准**。
+> 下面出现的型号与数字都是**某一次实测的样本**（驱动 617.42 / torch 2.13.0+cu130 / CUDA UMD 13.4）—— 换机器就会变。
 
 ## 一、先看有没有得用
 
@@ -17,7 +18,8 @@ whenToUse: The task is numerically heavy, data-parallel, or already slow on the 
 | `F:\Stable Diffusion\sd-webui-aki-v4.11.1-cu128\python\python.exe` | 3.11.9 | 2.7.0+cu128 | ✅ | 备选。有 **jax 0.4.38**、pandas；torch 略旧 |
 | `~/.dsh/dsh-runtimes/.../python.exe`（DSH 捆绑） | — | ❌ 没有 | ❌ | **只有 numpy/pandas**，别拿它跑 GPU（还要自己装 torch） |
 
-- 显卡 **RTX 4090 / 24 GB / sm_89**；`cuda_run` 默认自动挑第一个可用的解释器，不用你指定。
+- 显卡：**任何 CUDA-capable 的 NVIDIA 卡**都能用；**显存与算力先问 `cuda_status`，别按型号猜**
+  （实测样本：RTX 4090 / 24564 MiB / sm_89）。`cuda_run` 默认自动挑第一个可用的解释器，不用你指定。
 - ⚠️ **本机没有 nvcc、没有 CUDA Toolkit**（只有要写 CUDA C++ 才需要装，约 3 GB）。
 - ⚠️ **写自定义 kernel 只能用 triton —— `numba.cuda` 在本机是废的**（2026-10-15 实测，别重蹈覆辙）：
   `numba.cuda.is_available()` 返回 **False**，任何 kernel 调用都会抛
@@ -63,9 +65,11 @@ print(f"{(time.perf_counter()-t0)*1e3:.2f} ms  sum={float(z):.4f}")   # 只打�
 torch.save({'bad': torch.arange(16, device=dev).cpu()}, os.path.join(os.environ['DSH_CUDA_JOB_DIR'], 'out.pt'))
 ```
 
-- **显存预算**：`字节 ≈ 元素数 × dtype字节 × 中间张量个数`。fp32 是 4 B、fp64 8 B、bf16 2 B。
-  24 GB ≈ 60 亿个 fp32 数（含中间结果要打折）。**超了就在 CPU 上分块喂**（`for chunk in ...: 送显存 → 算 → 取回`）。
-- **dtype**：默认 fp32。要快用 `torch.bfloat16`（4090 支持）；要精度才用 fp64（慢一个数量级）。
+- **显存预算**：`字节 ≈ 元素数 × dtype字节 × 中间张量个数`（fp32 4 B / fp64 8 B / bf16 2 B）。
+  拿 `cuda_status` 报的**实际**显存自己折算（例：24564 MiB ≈ 60 亿个 fp32 数，含中间结果要打折）。
+  **超了就在 CPU 上分块喂**（`for chunk in ...: 送显存 → 算 → 取回`）。
+- **dtype**：默认 fp32。要快用 `torch.bfloat16` —— **先看 `cuda_status` 报的 bf16 字段**（需 Ampere / 30 系及以上，老卡只能 fp16）；
+  要精度才用 fp64（慢一个数量级）。
 - **别在循环里 `.item()` / `.cpu()` / `print(张量)`** —— 每次都是同步 + 传输，能把 GPU 饿死。
 - **零拷贝**：`torch.from_numpy(arr)` 不复制，`torch.tensor(arr)` 会复制。
 - **大数据落地**：`.npy` / `.pt` 写文件，**不要 print 出来**（stdout 超过 12000 字符会被截断，

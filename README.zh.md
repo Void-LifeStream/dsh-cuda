@@ -1,9 +1,11 @@
 # dsh-cuda
 
-让 DSH 里的 agent 直接用本机 **RTX 4090** 跑 Python 计算：数值模拟、矩阵运算、蒙特卡洛、
+让 DSH 里的 agent 直接用本机 **NVIDIA CUDA GPU** 跑 Python 计算：数值模拟、矩阵运算、蒙特卡洛、
 参数扫描、训练小模型，以及任何本该并行却挤在 CPU 上的活。
 
 > 2026-10-15 落地。含三个工具 + 一份技能（`skills/cuda-compute/SKILL.md`）。
+> **不挑卡**：任何 CUDA-capable 的 NVIDIA GPU 都能用（型号 / 显存 / 算力由 `cuda_status` 实时报告，
+> 不写死在文档里）。文档里出现的 RTX 4090 数字是作者机器的**实测样本**，不是要求。
 
 ## 它给你什么
 
@@ -71,7 +73,9 @@ plugin_manager  action: install_bundle  target: E:\DeepSeek Harness\Infrastructu
     maxOutputChars: 12000         # 每次回给模型的输出上限
 ```
 
-## 本机 CUDA 地形（2026-10-15 实测）
+## 作者机器的实测样本（2026-10-15）
+
+> 下面是**样本**，不是要求 —— 你的机器请以 `cuda_status` 的输出为准。
 
 - RTX 4090 / 24564 MiB / sm_89，驱动 617.42；fp32 matmul 实测约 58 TFLOPS
 - 可用解释器：ComfyUI 的 `python 3.13.11 + torch 2.13.0+cu130`（另有 numba / triton / scipy / sklearn），
