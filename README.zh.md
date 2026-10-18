@@ -37,9 +37,9 @@
 
    ```powershell
    $node = "$env:USERPROFILE\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\node\bin\node.exe"
-   & $node "E:\DeepSeek Harness\Infrastructure\dsh-cuda\test\selftest.mjs"   # 引擎 35 项（真机 GPU）
-   & $node "E:\DeepSeek Harness\Infrastructure\dsh-cuda\test\harness.mjs"    # 插件 45 项（mock ctx 驱动 apply）
-   & $node "E:\DeepSeek Harness\Infrastructure\dsh-cuda\test\lossless.mjs"   # 返回值合规 28 项
+   & $node ".\test\selftest.mjs"   # 引擎 35 项（真机 GPU）
+   & $node ".\test\harness.mjs"    # 插件 45 项（mock ctx 驱动 apply）
+   & $node ".\test\lossless.mjs"   # 返回值合规 28 项
    ```
 
    ⚠️ `lossless.mjs` 不是凑数的：DSH 要求工具返回值是**无损 JSON**（`visitJsonValue` 拒
@@ -53,7 +53,7 @@
 那是 DSH 自带技能 `cordis-plugin-development` 明确劝阻的做法）：
 
 ```
-plugin_manager  action: install_bundle  target: E:\DeepSeek Harness\Infrastructure\dsh-cuda
+plugin_manager  action: install_bundle  target: <你把 dsh-cuda 放在哪>
 ```
 
 `install_bundle` 会替你写 profile 的依赖与 bundle 清单并跑 pnpm。**host 插件需要重启 DSH 才加载。**
@@ -65,7 +65,7 @@ plugin_manager  action: install_bundle  target: E:\DeepSeek Harness\Infrastructu
 ```yaml
 - id: dsh-cuda
   config:
-    pythonPath: 'F:\ComfyUI\ComfyUI-aki-v3.2\python\python.exe'  # 留空 = 自动挑第一个可用候选
+    pythonPath: ''  # 留空 = 自动挑第一个可用候选
     pythonCandidates: []          # 追加候选解释器
     runsDir: ''                   # 默认 ~/.dsh/gpu-runs
     defaultTimeoutMs: 300000      # 前台预算（超了转后台）

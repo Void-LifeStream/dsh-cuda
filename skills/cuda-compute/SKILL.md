@@ -14,8 +14,8 @@ whenToUse: The task is numerically heavy, data-parallel, or already slow on the 
 
 | 解释器 | python | torch | CUDA | 用什么 |
 |---|---|---|---|---|
-| `F:\ComfyUI\ComfyUI-aki-v3.2\python\python.exe` | 3.13.11 | 2.13.0**+cu130** | ✅ | **默认首选**。另有 triton 3.5.1、scipy 1.17、scikit-learn、matplotlib；⚠️ **numba 的 CUDA 后端在本机是废的**（见下） |
-| `F:\Stable Diffusion\sd-webui-aki-v4.11.1-cu128\python\python.exe` | 3.11.9 | 2.7.0+cu128 | ✅ | 备选。有 **jax 0.4.38**、pandas；torch 略旧 |
+| `<ComfyUI 的 python.exe>` | 3.13.11 | 2.13.0**+cu130** | ✅ | **默认首选**。另有 triton 3.5.1、scipy 1.17、scikit-learn、matplotlib；⚠️ **numba 的 CUDA 后端在本机是废的**（见下） |
+| `<SD WebUI 的 python.exe>` | 3.11.9 | 2.7.0+cu128 | ✅ | 备选。有 **jax 0.4.38**、pandas；torch 略旧 |
 | `~/.dsh/dsh-runtimes/.../python.exe`（DSH 捆绑） | — | ❌ 没有 | ❌ | **只有 numpy/pandas**，别拿它跑 GPU（还要自己装 torch） |
 
 - 显卡：**任何 CUDA-capable 的 NVIDIA 卡**都能用；**显存与算力先问 `cuda_status`，别按型号猜**
@@ -29,7 +29,7 @@ whenToUse: The task is numerically heavy, data-parallel, or already slow on the 
   **别在它身上浪费时间**，除非用户愿意装数 GB 的 toolkit。
 - ✅ **triton 已实测可用**（3.5.1，自带 LLVM/ptxas，零额外安装）：elementwise map / zip / 越界 guard /
   2D / broadcast / 分块大数组 / 规约 dot / 逐行 softmax 八种写法全部跑通，模板脚本见
-  `E:\DeepSeek Harness\Infrastructure\cuda-probe\gpu-puzzles\triton_puzzles.py`（可直接抄写法）。
+  `<你的工作区>/cuda-probe/gpu-puzzles/triton_puzzles.py`（可直接抄写法）。
   顺带：开源题库 **`srush/GPU-Puzzles` 的官方 grader 在本机跑不了**（它用 numba.cuda 驱动 kernel），
   上面那个脚本就是把这套题翻译成 triton 版 + 自带 numpy 对拍的产物。
 - ⚠️ 没有 cupy。要装得动 ComfyUI 的环境（`<上面第一个路径> -m pip install cupy-cuda13x`）——
@@ -76,7 +76,7 @@ torch.save({'bad': torch.arange(16, device=dev).cpu()}, os.path.join(os.environ[
   还会挤爆上下文）。要回看就用 read 工具读文件。
 - **自定义 kernel 用 triton**（`@triton.jit`）—— `numba.cuda` 在本机不可用，别浪费一轮排查（见第一节）。
   八种常用写法的可直接抄模板在
-  `E:\DeepSeek Harness\Infrastructure\cuda-probe\gpu-puzzles\triton_puzzles.py`。
+  `<你的工作区>/cuda-probe/gpu-puzzles/triton_puzzles.py`。
   先用小规模对拍 CPU 结果（`np.allclose`）再放大。
 
 ## 四、这台机器上的坑（都踩过）
@@ -100,7 +100,7 @@ torch.save({'bad': torch.arange(16, device=dev).cpu()}, os.path.join(os.environ[
 
 ## 五、维护这份技能与插件
 
-- **源码都在工作区**：`E:\DeepSeek Harness\Infrastructure\dsh-cuda\`
+- **源码就是本仓库**
   （`lib/engine.js` 引擎、`lib/entry.js` 工具与技能注册；本文件在包的 `skills\cuda-compute\SKILL.md`）。
   它 link 装进 desktop profile，改文件即改源；**但 bundle 代码只在 DSH 启动时加载，改完必须重启 DSH**。
 - **改完先自测，不用重启**（都用 DSH 捆绑的 node 跑）：

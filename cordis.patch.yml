@@ -16,7 +16,7 @@
 # 可选配置（在 profile 的 cordis.patch.yml 里覆盖）：
 #   - id: dsh-cuda
 #     config:
-#       pythonPath: 'F:\ComfyUI\ComfyUI-aki-v3.2\python\python.exe'
+#       pythonPath: ''
 #       defaultTimeoutMs: 300000
 #       maxOutputChars: 12000
 # ============================================================================
